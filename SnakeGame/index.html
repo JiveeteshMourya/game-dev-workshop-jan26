@@ -12,8 +12,9 @@
             font-family: Arial, Helvetica, sans-serif;
             display: flex;
             justify-content: center;
-            height: 100vh;
+            /* height: 100vh; */
             margin: 0;
+            padding-bottom: 30px;
         }
 
         .game-container {
@@ -49,6 +50,40 @@
             font-size: 18px;
         }
 
+        .control-btns-container {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .controlBtn {
+            height: 40px;
+            width: 50px;
+            background-color: yellow;
+            color: blue;
+            font-size: 1.5rem;
+            font-weight: 900;
+            border-radius: 4px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        #middleControlBtns {
+            width: 80%;
+            display: flex;
+            justify-content: space-around;
+        }
+
+        @media (max-width: 425px) {
+            canvas {
+                height: 300px;
+                width: 300px;
+            }
+        }
+
     </style>
 </head>
 <body>
@@ -57,6 +92,14 @@
         <button id="startBtn">Start Game</button>
         <canvas id="game" width="400" height="400"></canvas>
         <div id="score">Score: 0</div>
+        <div class="control-btns-container">
+            <div id="controlBtnUp" class="controlBtn">&#x2191;</div>
+            <div id="middleControlBtns">
+                <div id="controlBtnLeft" class="controlBtn">&#x2190;</div>
+                <div id="controlBtnRight" class="controlBtn">&#x2192;</div>
+            </div>
+            <div id="controlBtnDown" class="controlBtn">&#x2193;</div>
+        </div>
     </div>
 
     <script>
@@ -73,6 +116,14 @@
 
         document.addEventListener("keydown", changeDirection);
         startBtn.addEventListener("click", startGame);
+
+        const setDirection = (newDir, blockedDir) =>
+            direction !== blockedDir && (direction = newDir);
+
+        controlBtnUp.addEventListener("click", () => setDirection("UP", "DOWN"));
+        controlBtnDown.addEventListener("click", () => setDirection("DOWN", "UP"));
+        controlBtnRight.addEventListener("click", () => setDirection("RIGHT", "LEFT"));
+        controlBtnLeft.addEventListener("click", () => setDirection("LEFT", "RIGHT"));
 
         function startGame() {
             if(running) return;
@@ -96,7 +147,6 @@
             else if(e.key === "ArrowDown" && direction !== "UP") direction = "DOWN";
             else if(e.key === "ArrowLeft" && direction !== "RIGHT") direction = "LEFT";
             else if(e.key === "ArrowRight" && direction !== "LEFT") direction = "RIGHT";
-            
         }
 
         function generateFood() {
@@ -112,62 +162,62 @@
         }
 
         function draw() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // draw snake
-    snake.forEach((part, index) => {
-        ctx.fillStyle = index === 0 ? "#0f0" : "#0a0";
-        ctx.fillRect(part.x, part.y, box, box);
-    });
+            // draw snake
+            snake.forEach((part, index) => {
+                ctx.fillStyle = index === 0 ? "#0f0" : "#0a0";
+                ctx.fillRect(part.x, part.y, box, box);
+            });
 
-    // draw food
-    ctx.fillStyle = "red";
-    ctx.fillRect(food.x, food.y, box, box);
+            // draw food
+            ctx.fillStyle = "red";
+            ctx.fillRect(food.x, food.y, box, box);
 
-    let head = { ...snake[0] };
+            let head = { ...snake[0] };
 
-    if (direction === "UP") head.y -= box;
-    else if (direction === "DOWN") head.y += box;
-    else if (direction === "LEFT") head.x -= box;
-    else if (direction === "RIGHT") head.x += box;
+            if (direction === "UP") head.y -= box;
+            else if (direction === "DOWN") head.y += box;
+            else if (direction === "LEFT") head.x -= box;
+            else if (direction === "RIGHT") head.x += box;
 
-    // Wall collision
-    if (
-        head.x < 0 ||
-        head.y < 0 ||
-        head.x >= canvasSize ||
-        head.y >= canvasSize
-    ) {
-        clearInterval(game);
-        running = false;
-        startBtn.disabled = false;
-        alert("Game Over! Your Score: " + score);
-        return;
-    }
+            // Wall collision
+            if (
+                head.x < 0 ||
+                head.y < 0 ||
+                head.x >= canvasSize ||
+                head.y >= canvasSize
+            ) {
+                clearInterval(game);
+                running = false;
+                startBtn.disabled = false;
+                alert("Game Over! Your Score: " + score);
+                return;
+            }
 
-    // Will we eat?
-    const willEat = (head.x === food.x && head.y === food.y);
+            // Will we eat?
+            const willEat = (head.x === food.x && head.y === food.y);
 
-    if (willEat) {
-        score++;
-        document.getElementById("score").innerText = "Score: " + score;
-        food = generateFood();
-    } else {
-        // remove tail before self-collision check
-        snake.pop();
-    }
+            if (willEat) {
+                score++;
+                document.getElementById("score").innerText = "Score: " + score;
+                food = generateFood();
+            } else {
+                // remove tail before self-collision check
+                snake.pop();
+            }
 
-    // Self-collision (after tail removed if not eating)
-    if (collision(head, snake)) {
-        clearInterval(game);
-        running = false;
-        startBtn.disabled = false;
-        alert("Game Over! Your Score: " + score);
-        return;
-    }
+            // Self-collision (after tail removed if not eating)
+            if (collision(head, snake)) {
+                clearInterval(game);
+                running = false;
+                startBtn.disabled = false;
+                alert("Game Over! Your Score: " + score);
+                return;
+            }
 
-    snake.unshift(head);
-}
+            snake.unshift(head);
+        }
 
     </script>
 </body>
